@@ -11,7 +11,7 @@ public class MainWindow extends JFrame {
         setTitle("Змейка");//название
         setSize(320,345);//  размеры окна
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//действие с окном при нажатие на крестик
-        setLocation(400,400);// располодение на экране
+        setLocation(400,200);// располодение на экране
         add(new GameField());//игровое поле
         setVisible(true);// видимосто окна
     }
