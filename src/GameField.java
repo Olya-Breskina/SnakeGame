@@ -7,12 +7,16 @@ import java.awt.event.KeyEvent;
 import java.util.Random;
 
 public class GameField extends JPanel implements ActionListener {
-    private final int SIZE = 320;// размер поля
-    private final int DOT_SIZE = 16;// одна ячейка змейки и размер яблочка
-    private final int ALL_DOTS = 400;// количество игровых единиц на поле
+    private static final int SIZE = 320;// размер поля
+    private static final int DOT_SIZE = 16;// одна ячейка змейки и размер яблочка
+    private static final int WIDTH = 20;
+    private static final int HEIGHT = 20;
+    private static final int ALL_DOTS = 400;// количество игровых единиц на поле
     //позиция по Х и У змейки по мах, змейка может занимать все игровое поле
     private final int[] x = new int[ALL_DOTS];
     private final int[] y = new int[ALL_DOTS];
+    public int eatenApples = 0;// количество съеденных яблок
+    public boolean stop = false; // таймер не остановлен
     // направление змейки
     private boolean left = false;
     private boolean right = true;// двигается справа налево
@@ -23,17 +27,30 @@ public class GameField extends JPanel implements ActionListener {
     //позиция по Х и У яблока
     private int appleX;
     private int appleY;
-
     private int dots;// размер змейки
     private Timer timer;// таймер
     private boolean inGame = true;// положение в игре
-
-    public GameField() {
+/*
+            public GameField() {
         setBackground(Color.black);// цвет поля
         loadImages();
         initGame();
         addKeyListener(new FieldKeyListener());
         setFocusable(true);// перехват клавиатуры игрой
+    }
+    */
+    public void start() {
+        setBackground(Color.black);// цвет поля
+        loadImages();
+        initGame();
+        inGame = true;
+        addKeyListener(new FieldKeyListener());
+        setFocusable(true);// перехват клавиатуры игрой
+    }
+
+    public void stop() {//
+        setBackground(Color.blue);
+        inGame = false;
     }
 
     public void initGame() {
@@ -86,20 +103,36 @@ public class GameField extends JPanel implements ActionListener {
         } else {
             String str = "Game Over";
             g.setColor(Color.white);
-            g.drawString(str,125,SIZE/2);
+            g.setFont(new Font("arial",Font.PLAIN,20));
+            g.drawString(str, 125, SIZE / 3);
+            String str1="счет: "+eatenApples;
+            g.setColor(Color.white);
+            g.setFont(new Font("arial",Font.PLAIN,15));
+            g.drawString(str1, 125, SIZE / 2);
+
+        }
+        //сетка
+        for (int i = 0; i < WIDTH * DOT_SIZE; i = i + DOT_SIZE) {
+            g.setColor(Color.DARK_GRAY);
+            g.drawLine(i, 0, i, HEIGHT * DOT_SIZE);
+        }
+
+        for (int z = 0; z < HEIGHT * DOT_SIZE; z += DOT_SIZE) {
+            g.setColor(Color.DARK_GRAY);
+            g.drawLine(0, z, WIDTH * DOT_SIZE, z);
         }
     }
-
     public void checkApple() {
         //встреча с яблоком
         if (x[0] == appleX && y[0] == appleY) {
             dots++;
+            eatenApples++;
             createApple();
         }
     }
 
     public void checkCollisions() {
-        //укусила сама себя
+        //укусила сама себя, игра закончена
         for (int i = dots; i > 0; i--) {
             if (i > 4 && x[0] == x[i] && y[0] == y[i]) {
                 inGame = false;
@@ -107,10 +140,7 @@ public class GameField extends JPanel implements ActionListener {
             }
         }
         // встреча с бортами
-        if (x[0] > SIZE) inGame = false;
-        if (x[0] < 0) inGame = false;
-        if (y[0] > SIZE) inGame = false;
-        if (y[0] < 0) inGame = false;
+        if ((x[0] > SIZE) || (x[0] < 0) || (y[0] > SIZE) || (y[0] < 0)) inGame = false;
     }
 
     @Override
