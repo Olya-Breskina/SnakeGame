@@ -9,14 +9,13 @@ import java.util.Random;
 public class GameField extends JPanel implements ActionListener {
     private static final int SIZE = 320;// размер поля
     private static final int DOT_SIZE = 16;// одна ячейка змейки и размер яблочка
-    private static final int WIDTH = 20;
-    private static final int HEIGHT = 20;
+    private static final int WIDTH = 21;
+    private static final int HEIGHT = 21;
     private static final int ALL_DOTS = 400;// количество игровых единиц на поле
     //позиция по Х и У змейки по мах, змейка может занимать все игровое поле
     private final int[] x = new int[ALL_DOTS];
     private final int[] y = new int[ALL_DOTS];
     public int eatenApples = 0;// количество съеденных яблок
-    public boolean stop = false; // таймер не остановлен
     // направление змейки
     private boolean left = false;
     private boolean right = true;// двигается справа налево
@@ -30,29 +29,25 @@ public class GameField extends JPanel implements ActionListener {
     private int dots;// размер змейки
     private Timer timer;// таймер
     private boolean inGame = true;// положение в игре
-/*
-            public GameField() {
-        setBackground(Color.black);// цвет поля
-        loadImages();
-        initGame();
-        addKeyListener(new FieldKeyListener());
-        setFocusable(true);// перехват клавиатуры игрой
-    }
-    */
+
     public void start() {
         setBackground(Color.black);// цвет поля
+        eatenApples=0;
         loadImages();
         initGame();
         inGame = true;
-        addKeyListener(new FieldKeyListener());
-        setFocusable(true);// перехват клавиатуры игрой
+        FieldKeyListener listener = new FieldKeyListener();
+        this.setFocusable(true);
+        this.requestFocus();// перехват клавиатуры игрой
+        this.addKeyListener(listener);
     }
-
     public void stop() {//
         setBackground(Color.blue);
         inGame = false;
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
     }
-
     public void initGame() {
         // начало игры
         dots = 2;// начальный размер змейки
@@ -60,12 +55,16 @@ public class GameField extends JPanel implements ActionListener {
             x[i] = 48 - i * DOT_SIZE;
             y[i] = 48;
         }
-        timer = new Timer(250, this);// частота обновления змейки на поле
-        timer.start();//запуск таймера
+        if (timer !=null && timer.isRunning()) {
+            timer.restart();
+        } else {
+            timer = new Timer(250, this);// частота обновления змейки на поле
+            timer.start();//запуск таймера
+        }
         createApple();
     }
-
     public void createApple() {
+        // яблоко может быть под змейкой(((
         appleX = new Random().nextInt(20) * DOT_SIZE;
         appleY = new Random().nextInt(20) * DOT_SIZE;
     }
@@ -101,15 +100,8 @@ public class GameField extends JPanel implements ActionListener {
                 g.drawImage(dot, x[i], y[i], this);
             }
         } else {
-            String str = "Game Over";
-            g.setColor(Color.white);
-            g.setFont(new Font("arial",Font.PLAIN,20));
-            g.drawString(str, 125, SIZE / 3);
-            String str1="счет: "+eatenApples;
-            g.setColor(Color.white);
-            g.setFont(new Font("arial",Font.PLAIN,15));
-            g.drawString(str1, 125, SIZE / 2);
-
+            stop();
+            drawGameOver(g);
         }
         //сетка
         for (int i = 0; i < WIDTH * DOT_SIZE; i = i + DOT_SIZE) {
@@ -121,6 +113,17 @@ public class GameField extends JPanel implements ActionListener {
             g.setColor(Color.DARK_GRAY);
             g.drawLine(0, z, WIDTH * DOT_SIZE, z);
         }
+    }
+
+    private void drawGameOver(Graphics g) {
+        String str = "Game Over";
+        g.setColor(Color.white);
+        g.setFont(new Font("arial",Font.PLAIN,20));
+        g.drawString(str, 125, SIZE / 3);
+        String str1="счет: "+eatenApples;
+        g.setColor(Color.white);
+        g.setFont(new Font("arial",Font.PLAIN,15));
+        g.drawString(str1, 125, SIZE / 2);
     }
     public void checkApple() {
         //встреча с яблоком
